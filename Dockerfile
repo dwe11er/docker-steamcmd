@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM ubuntu:bionic
 # sadly we cannot use Alpine here because of the 32bit libstdc++ dependency
 
 MAINTAINER SFoxDev <admin@sfoxdev.com>
@@ -16,11 +16,18 @@ RUN apt update \
 	&& cd /home/steam\
 	mkdir Steam
 
+RUN dpkg --add-architecture i386 \
+	&& apt update \
+	&& apt install -y libc6:i386 libncurses5:i386 libstdc++6:i386 \
+	&& apt clean
+
 WORKDIR /home/steam/Steam
 ADD install.sh /home/steam/Steam
-RUN chown -R steam:steam /home/steam/Steam \
-	&& curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf - \
-	&& chmod u+x install.sh
+
+RUN curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf - \
+	&& chmod u+x install.sh \
+	&& chmod u+x /home/steam/Steam/steamcmd.sh \
+	&& chown -R steam:steam /home/steam/Steam
 
 USER steam
 
